@@ -35,13 +35,13 @@ class XYZtoRGBConverter:
 
 
 # XYZ color matching function
-x_bar = XYZColorMatching([PieceWiseGaussian(1.056, 5998, 379, 310),
-                         PieceWiseGaussian(0.362, 4420, 160, 267),
-                         PieceWiseGaussian(-0.065, 5011, 204, 262)])
-y_bar = XYZColorMatching([PieceWiseGaussian(0.821, 5688, 469, 405),
-                          PieceWiseGaussian(0.286, 5309, 163, 311)])
-z_bar = XYZColorMatching([PieceWiseGaussian(1.217, 4370, 118, 360),
-                          PieceWiseGaussian(0.681, 4590, 260, 138)])
+wavelength_to_x_bar = XYZColorMatching([PieceWiseGaussian(1.056, 5998, 379, 310),
+                                        PieceWiseGaussian(0.362, 4420, 160, 267),
+                                        PieceWiseGaussian(-0.065, 5011, 204, 262)])
+wavelength_to_y_bar = XYZColorMatching([PieceWiseGaussian(0.821, 5688, 469, 405),
+                                        PieceWiseGaussian(0.286, 5309, 163, 311)])
+wavelength_to_z_bar = XYZColorMatching([PieceWiseGaussian(1.217, 4370, 118, 360),
+                                        PieceWiseGaussian(0.681, 4590, 260, 138)])
 
 
 # RGB color matching functions
@@ -56,9 +56,9 @@ def truncation(intensity, minimum=0, maximum=1):
 
 
 def wavelength_to_rgb(wl: float, gamma=1) -> RGBColor:
-    x = x_bar(wl)
-    y = x_bar(wl)
-    z = z_bar(wl)
+    x = wavelength_to_x_bar(wl)
+    y = wavelength_to_x_bar(wl)
+    z = wavelength_to_z_bar(wl)
     r = truncation(r_bar(x, y, z))**gamma
     g = truncation(g_bar(x, y, z))**gamma
     b = truncation(b_bar(x, y, z))**gamma

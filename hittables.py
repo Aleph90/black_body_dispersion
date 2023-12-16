@@ -1,6 +1,10 @@
 from tuples import *
 
 
+def is_within_range(t, min_time=None, max_time=None) -> bool:
+    return t is not None and (min_time is None or t >= min_time) and (max_time is None or t <= max_time)
+
+
 class HitRecord:
     def __init__(self, point, normal, time):
         self.point = point
@@ -17,45 +21,45 @@ class HitRecord:
 no_record = HitRecord(None, None, None)
 
 
-class Hittable:
-    def __init__(self, components=[]):
-        self.components = components
+class CompositeHittable:
+    def __init__(self, components=None):
+        self.components = components if components else []
 
     def is_hit(self, ray, min_time=0, max_time=None):
-        method_output = False
+        hit_detected = False
         i = 0
-        while method_output is False and i < len(self.components):
-            method_output = self.components[i].is_hit(ray, min_time, max_time)
+        while not hit_detected and i < len(self.components):
+            hit_detected = self.components[i].is_hit(ray, min_time, max_time)
             i += 1
-        return method_output
+        return hit_detected
 
     def contains_point(self, point):
-        method_output = False
+        container_found = False
         i = 0
-        while method_output is False and i < len(self.components):
-            method_output = self.components[i].contains_point(point)
+        while not container_found and i < len(self.components):
+            container_found = self.components[i].contains_point(point)
             i += 1
-        return method_output
+        return container_found
 
     def hit_info(self, ray, min_time=0, max_time=None):
         # To do: Develop a warning in case the ray hits two components at the same point
-        method_output = no_record
+        record = no_record
         for component in self.components:
             new_candidate = component.hit_info(ray, min_time, max_time)
-            if method_output == no_record or (new_candidate != no_record and new_candidate.time < method_output.time):
-                method_output = new_candidate
-        return method_output
+            if record == no_record or (new_candidate != no_record and new_candidate.time < record.time):
+                record = new_candidate
+        return record
 
     def distance_from_point(self, point):
-        method_output = None
+        distance = None
         for component in self.components:
             new_distance = component.distance_from_point(point)
-            if method_output is None or method_output > new_distance:
-                method_output = new_distance
-        return method_output
+            if distance is None or new_distance < distance:
+                distance = new_distance
+        return distance
 
 
-class Plane(Hittable):
+class Plane:
     def __init__(self, point, normal):
         self.point = point
         self.normal = normal
@@ -63,18 +67,12 @@ class Plane(Hittable):
 
     def intercept_time(self, ray, min_time=0, max_time=None):
         # Assume by default that no intersection occurs, and then check if it does.
-        method_output = None
-        normal = self.normal
-        if dot(normal, ray.direction) != 0:
-            t = dot(self.point - ray.origin, normal) / dot(normal, ray.direction)
-        elif dot(self.point - ray.direction) == 0:
+        t = None
+        if dot(self.normal, ray.direction) != 0:
+            t = dot(self.point - ray.origin, self.normal) / dot(self.normal, ray.direction)
+        elif dot(self.point - ray.origin, self.normal) == 0:
             t = 0
-
-        # If an intersection does occur, test if it is in the admissible range, and if so change the output.
-        if t is not None:
-            if (min_time is None or t > min_time) and (max_time is None or t < max_time):
-                method_output = t
-        return method_output
+        return t if is_within_range(t, min_time, max_time) else None
 
     def is_hit(self, ray, min_time=0, max_time=None):
         return self.intercept_time(ray, min_time, max_time) is not None
@@ -87,56 +85,48 @@ class Plane(Hittable):
 
     def hit_info(self, ray, min_time=0, max_time=None):
         t = self.intercept_time(ray, min_time, max_time)
-        if t is not None:
-            hit_point = ray.point_at_t(t)
-            normal = self.normal
-        else:
-            hit_point = None
-            normal = None
-        return HitRecord(hit_point, normal, t)
+        return HitRecord(ray.point_at_t(t), self.normal, t) if t is not None else no_record
 
 
-class Sphere(Hittable):
-    def __init__(self, centre, radius):
-        self.centre = centre
+class Sphere:
+    def __init__(self, center, radius):
+        self.center = center
         self.radius = radius
         self.components = [self]
 
     def intercept_time(self, ray, min_time=0, max_time=None):
         # Assume by default that no intersection occurs, and prepare to return None.
-        method_output = None
+        t = None
         a = ray.direction.norm_square()
-        b_halves = - dot(self.centre - ray.origin, ray.direction)
-        c = (self.centre - ray.origin).norm_square() - self.radius**2
+        b_halves = - dot(self.center - ray.origin, ray.direction)
+        c = (self.center - ray.origin).norm_square() - self.radius ** 2
         discriminant = b_halves**2 - a*c
-        # If the discriminant is positive there are two intersection points, so we might need to change the output.
+        # If the discriminant is positive there are two intersection points.
+        # We want the earliest admissible solution, or None if neither is.
+        # If the smaller solution is admissible, we will accept it.
+        # Otherwise, we test the other one.
         if discriminant >= 0:
-            # Test the intersection point with larger t.
-            # If it falls within the admitted range, assume that is the output to return.
-            t = (- b_halves + sqrt(discriminant))/a
-            if (min_time is None or t >= min_time) and (max_time is None or t <= max_time):
-                method_output = t
-            # Now test the other intersection point, with smaller t.
-            # If it falls within the admitted range, it is also closer to the camera and hence the correct output.
             t = (- b_halves - sqrt(discriminant))/a
-            if (min_time is None or t >= min_time) and (max_time is None or t <= max_time):
-                method_output = t
-        return method_output
+            if not is_within_range(t, min_time, max_time):
+                t = (- b_halves + sqrt(discriminant))/a
+            if not is_within_range(t, min_time, max_time):
+                t = None
+        return t
 
     def is_hit(self, ray, min_time=0, max_time=None):
         return self.intercept_time(ray, min_time, max_time) is not None
 
     def contains_point(self, point):
-        return (point - self.centre).norm_square() <= self.radius**2
+        return (point - self.center).norm_square() <= self.radius**2
 
     def distance_from_point(self, point):
-        return (self.centre - point).norm() - self.radius
+        return (self.center - point).norm() - self.radius
 
     def hit_info(self, ray, min_time=0, max_time=None):
         t = self.intercept_time(ray, min_time, max_time)
         if t is not None:
             hit_point = ray.point_at_t(t)
-            normal = (hit_point - self.centre)/self.radius
+            normal = (hit_point - self.center) / self.radius
         else:
             hit_point = None
             normal = None
