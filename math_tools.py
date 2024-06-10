@@ -1,6 +1,7 @@
 from math import sqrt
 
 
+# Linear algebra
 class Vect3D:
     def __init__(self, x: float, y: float, z: float):
         self._entries = [x, y, z]
@@ -148,7 +149,43 @@ class Matrix3by3:
             raise TypeError('What are you trying to multiply this matrix by?')
         return product
 
+    def det(self) -> float:
+        return dot(self._cols[0], cross(self._cols[1], self._cols[2]))
 
+
+def dot(v: Vect3D, w: Vect3D) -> float:
+    return v.dot_with(w)
+
+
+def norm_squared(v: Vect3D) -> float:
+    return v.norm_squared()
+
+
+def norm(v: Vect3D) -> float:
+    return v.norm()
+
+
+def normalised(v: Vect3D) -> Vect3D:
+    return v.normalised()
+
+
+def cross(v: Vect3D, w: Vect3D) -> Vect3D:
+    return v.cross_with(w)
+
+
+def det(m: Matrix3by3) -> float:
+    return m.det()
+
+
+def is_basis(u: Vect3D, v: Vect3D, w: Vect3D, precision: int = 3):
+    return abs(det(Matrix3by3(u, v, w))) > 10**(-precision)
+
+
+def is_positive_frame(u: Vect3D, v: Vect3D, w: Vect3D):
+    return det(Matrix3by3(u, v, w)) > 0
+
+
+# Affine geometry
 class Ray:
     def __init__(self, origin: Vect3D, direction: Vect3D):
         self.origin = origin.copy()
@@ -173,28 +210,83 @@ class Ray:
         return self.origin + t * self.direction
 
 
-def dot(v: Vect3D, w: Vect3D) -> float:
-    return v.dot_with(w)
+# Color
+class RGBColor:
+    def __init__(self, r: float, g: float, b: float):
+        self._entries = [r, g, b]
 
+    def __eq__(self, other) -> bool:
+        return self._entries == other.entries
 
-def norm_squared(v: Vect3D) -> float:
-    return v.norm_squared()
+    def __copy__(self) -> 'RGBColor':
+        return RGBColor(*self._entries)
 
+    def copy(self) -> 'RGBColor':
+        return self.__copy__()
 
-def norm(v: Vect3D) -> float:
-    return v.norm()
+    # Representations and type conversion
+    def __repr__(self) -> str:
+        return f'RGBColor{tuple(self._entries)}'
 
+    def __str__(self) -> str:
+        return f'{tuple(self._entries)}'
 
-def normalised(v: Vect3D) -> Vect3D:
-    return v.normalised()
+    def __bool__(self) -> bool:
+        return bool([e for e in self._entries if e])
 
+    # Access
+    @property
+    def entries(self) -> list[float]:
+        return self._entries
 
-def cross(v: Vect3D, w: Vect3D) -> Vect3D:
-    return v.cross_with(w)
+    @property
+    def r(self) -> float:
+        return self._entries[0]
 
+    @property
+    def g(self) -> float:
+        return self._entries[1]
 
-def is_positive_frame(u: Vect3D, v: Vect3D, w: Vect3D):
-    return dot(cross(u, v), w) > 0
+    @property
+    def b(self) -> float:
+        return self._entries[2]
+
+    def __getitem__(self, key: int) -> float:
+        return self._entries[key]
+
+    @r.setter
+    def r(self, value: float):
+        self._entries[0] = value
+
+    @g.setter
+    def g(self, value: float):
+        self._entries[1] = value
+
+    @b.setter
+    def b(self, value: float):
+        self._entries[2] = value
+
+    def __setitem__(self, key: int, value: float):
+        self._entries[key] = value
+
+    # Algebra
+    def __add__(self, other: 'RGBColor') -> 'RGBColor':
+        return RGBColor(*[self._entries[i] + other[i] for i in range(3)])
+
+    def __sub__(self, other: 'RGBColor') -> 'RGBColor':
+        return self + (-other)
+
+    def __rmul__(self, scalar: float) -> 'RGBColor':
+        return RGBColor(*[scalar * entry for entry in self._entries])
+
+    def __mul__(self, scalar: float) -> 'RGBColor':
+        return scalar * self
+
+    def __truediv__(self, scalar: float) -> 'RGBColor':
+        return (1/scalar) * self
+
+    def __neg__(self) -> 'RGBColor':
+        return (-1) * self
 
 
 class SuperposedMathFunction:
@@ -217,68 +309,3 @@ class MathFunctionWithLookup:
         if args not in self._lookup:
             self._lookup[args] = self._fun(*args)
         return self._lookup[args]
-#
-#
-# class RGBColor:
-#     def __init__(self, r, g, b):
-#         self.r = r
-#         self.g = g
-#         self.b = b
-#
-#     def __str__(self):
-#         return f"({self.r}, {self.g}, {self.b})"
-#
-#     def __add__(self, other):
-#         r = self.r + other.r
-#         g = self.g + other.g
-#         b = self.b + other.b
-#         return RGBColor(r, g, b)
-#
-#     def __mul__(self, other):
-#         r = self.r * other
-#         g = self.g * other
-#         b = self.b * other
-#         return RGBColor(r, g, b)
-#
-#     def __truediv__(self, other):
-#         r = self.r / other
-#         g = self.g / other
-#         b = self.b / other
-#         return RGBColor(r, g, b)
-#
-#     def __iadd__(self, other):
-#         new_self = self + other
-#         self.r = new_self.r
-#         self.g = new_self.g
-#         self.b = new_self.b
-#         return self
-#
-#     def __imul__(self, other):
-#         new_self = self * other
-#         self.r = new_self.r
-#         self.g = new_self.g
-#         self.b = new_self.b
-#         return self
-#
-#     def __itruediv__(self, other):
-#         new_self = self / other
-#         self.r = new_self.r
-#         self.g = new_self.g
-#         self.b = new_self.b
-#         return self
-#
-#     def rounded(self):
-#         r = int(self.r//1)
-#         g = int(self.g//1)
-#         b = int(self.b//1)
-#         return RGBColor(r, g, b)
-#
-#     def do_round(self):
-#         new_self = self.rounded()
-#         self.r = new_self.r
-#         self.g = new_self.g
-#         self.b = new_self.b
-#         return self
-#
-#     def write_color(self):
-#         return str(self.rounded()) + '\n'
