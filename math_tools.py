@@ -298,15 +298,24 @@ class RGBColor(Vect3D):
         return self.cast(super().__neg__())
 
 
-class SuperposedMathFunction:
+class SumFun:
     def __init__(self, *components):
         self._components = list(components)
 
-    def __call__(self, *args):
+    # Representation and type conversion
+    def __repr__(self):
+        return f'SumFun{tuple(self._components)}'
+
+    def __str__(self):
+        return ' + '.join([str(comp) for comp in self._components])
+
+    # Function call
+    def __call__(self, *args) -> float:
         return sum([component(*args) for component in self._components])
 
-    def __add__(self, other) -> 'SuperposedMathFunction':
-        return SuperposedMathFunction(*self._components, other)
+    # Algebra
+    def __add__(self, other: 'SumFun') -> 'SumFun':
+        return SumFun(*self._components + other._components)
 
 
 class MathFunctionWithLookup:
