@@ -1,10 +1,18 @@
 from math import sqrt
 
 
-# Linear algebra
+# Geometry and linear algebra
 class Vect3D:
     def __init__(self, x: float, y: float, z: float):
         self._entries = [x, y, z]
+
+    @classmethod
+    def cast(cls, v: 'Vect3D') -> 'Vect3D':
+        return cls(*v.entries)
+
+    @classmethod
+    def null(cls):
+        return cls(0, 0, 0)
 
     def __eq__(self, other) -> bool:
         return self._entries == other.entries
@@ -46,18 +54,18 @@ class Vect3D:
         return self._entries[key]
 
     @x.setter
-    def x(self, value: float):
+    def x(self, value: float) -> None:
         self._entries[0] = value
 
     @y.setter
-    def y(self, value: float):
+    def y(self, value: float) -> None:
         self._entries[1] = value
 
     @z.setter
-    def z(self, value: float):
+    def z(self, value: float) -> None:
         self._entries[2] = value
 
-    def __setitem__(self, key: int, value: float):
+    def __setitem__(self, key: int, value: float) -> None:
         self._entries[key] = value
 
     # Linear algebra
@@ -128,10 +136,12 @@ class Matrix3by3:
         return bool([c for c in self._cols if c])
 
     # Access
-    def __getitem__(self, i: int, j: int) -> float:
+    def __getitem__(self, pos: tuple[int, int]) -> float:
+        i, j = pos
         return self._cols[j][i]
 
-    def __setitem__(self, i: int, j: int, val: float) -> None:
+    def __setitem__(self, pos: tuple[int, int], val: float) -> None:
+        i, j = pos
         self._cols[j][i] = val
 
     # Algebra
@@ -142,7 +152,7 @@ class Matrix3by3:
         if isinstance(other, float):
             product = other * self
         elif isinstance(other, Vect3D):
-            product = sum([other[i]*self._cols[i] for i in range(3)], start=Vect3D(0, 0, 0))
+            product = sum([other[i]*self._cols[i] for i in range(3)], start=self._cols[0].null())
         elif isinstance(other, Matrix3by3):
             product = Matrix3by3(*[self * col for col in other._cols])
         else:
@@ -185,7 +195,6 @@ def is_positive_frame(u: Vect3D, v: Vect3D, w: Vect3D):
     return det(Matrix3by3(u, v, w)) > 0
 
 
-# Affine geometry
 class Ray:
     def __init__(self, origin: Vect3D, direction: Vect3D):
         self.origin = origin.copy()
@@ -211,12 +220,12 @@ class Ray:
 
 
 # Color
-class RGBColor:
+class RGBColor(Vect3D):
     def __init__(self, r: float, g: float, b: float):
-        self._entries = [r, g, b]
+        super().__init__(r, g, b)
 
     def __eq__(self, other) -> bool:
-        return self._entries == other.entries
+        return isinstance(other, RGBColor) and super().__eq__(other)
 
     def __copy__(self) -> 'RGBColor':
         return RGBColor(*self._entries)
@@ -229,64 +238,64 @@ class RGBColor:
         return f'RGBColor{tuple(self._entries)}'
 
     def __str__(self) -> str:
-        return f'{tuple(self._entries)}'
+        return super().__str__()
 
     def __bool__(self) -> bool:
-        return bool([e for e in self._entries if e])
+        return super().__bool__()
 
     # Access
     @property
     def entries(self) -> list[float]:
-        return self._entries
+        return super().entries
 
     @property
     def r(self) -> float:
-        return self._entries[0]
+        return self.x
 
     @property
     def g(self) -> float:
-        return self._entries[1]
+        return self.y
 
     @property
     def b(self) -> float:
-        return self._entries[2]
+        return self.z
 
     def __getitem__(self, key: int) -> float:
-        return self._entries[key]
+        return super().__getitem__(key)
 
     @r.setter
-    def r(self, value: float):
-        self._entries[0] = value
+    def r(self, value: float) -> None:
+        self.x = value
 
     @g.setter
-    def g(self, value: float):
-        self._entries[1] = value
+    def g(self, value: float) -> None:
+        self.y = value
 
     @b.setter
-    def b(self, value: float):
-        self._entries[2] = value
+    def b(self, value: float) -> None:
+        self.z = value
 
-    def __setitem__(self, key: int, value: float):
-        self._entries[key] = value
+    def __setitem__(self, key: int, value: float) -> None:
+        super().__setitem__(key, value)
 
     # Algebra
     def __add__(self, other: 'RGBColor') -> 'RGBColor':
-        return RGBColor(*[self._entries[i] + other[i] for i in range(3)])
+        return self.cast(super().__add__(other))
 
     def __sub__(self, other: 'RGBColor') -> 'RGBColor':
-        return self + (-other)
+        return self.cast(super().__sub__(other))
 
     def __rmul__(self, scalar: float) -> 'RGBColor':
-        return RGBColor(*[scalar * entry for entry in self._entries])
+        return self.cast(super().__rmul__(scalar))
 
     def __mul__(self, scalar: float) -> 'RGBColor':
-        return scalar * self
+        return self.cast(super().__mul__(scalar))
 
     def __truediv__(self, scalar: float) -> 'RGBColor':
-        return (1/scalar) * self
+        return self.cast(super().__truediv__(scalar))
 
     def __neg__(self) -> 'RGBColor':
-        return (-1) * self
+        return self.cast(super().__neg__())
 
 
 class SuperposedMathFunction:
