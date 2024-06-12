@@ -671,6 +671,15 @@ class RGBColor(Vect3D):
 
         return f'RGBColor{tuple(self._entries)}'
 
+    def round_components(self, scale: int = 1):
+        """Produce a rescaled version of `self` with integer components.
+
+        :param int scale: Rescaling factor, default to 1, i.e. no rescaling.
+        :return: A new RGB color with values rescaled by `scale` and integer components.
+        """
+
+        return RGBColor(*[int((scale*e)//1.0) for e in self._entries])
+
     # Access
     @property
     def r(self) -> float:
@@ -798,6 +807,40 @@ class RGBColor(Vect3D):
         :return: A new "color" with components opposite to those of `self`.
         """
         return self.cast(super().__neg__())
+
+    # Color transformations.
+    def clamped(self, minimum: float = 0, maximum: float = 1):
+        """Clamping function to ensure color is within allowable range.
+
+        If any component is outside the allowable range it will be replaced
+        with the value of closer end.
+
+        :param minimum: Lower end of allowable range.
+        :param maximum: Upper end of allowable range.
+        :return: A new `RGBColor` object with all three components clamped within range.
+        """
+
+        return RGBColor(*[min(max(e, minimum), maximum) for e in self._entries])
+
+    def apply_gamma(self, gamma: float):
+        """Gamma correction.
+
+        Gamma correction amounts to raising all components to a certain power,
+        the gamma coefficient.
+        When gamma < 1, the effect of this operation is to increase all values,
+        resulting in lighter colors. It also enhances the separation between
+        darker colors and attenuates it for lighter ones.
+        When gamma > 1, the effect is the opposite: all values are decreased and
+        colors made darker, with separation enhanced in the lighter range.
+
+        The three RGB components are assumed to be expressed as floating
+        point numbers between 0.0 and 1.0.
+        
+        :param float gamma: Coefficient for gamma correction.
+        :return: A new RGB color with gamma correction applied.
+        """
+
+        return RGBColor(*[e**gamma for e in self._entries])
 
 
 class SumFun:
