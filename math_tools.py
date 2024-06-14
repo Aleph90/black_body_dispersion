@@ -302,6 +302,47 @@ class Vect3D:
                       self.z * other.x - self.x * other.z,
                       self.x * other.y - self.y * other.x)
 
+    def reflect(self, normal: 'Vect3D'):
+        """Reflection about a plane of given normal.
+
+        :param Vect3D normal: Vector normal to the plane of reflection.
+        :return: A new vector representing the reflection of `self` with respect to the plane of given normal.
+        """
+
+        return self - 2 * self.dot_with(normal)/normal.norm_squared() * normal
+
+    def refract(self, normal: 'Vect3D', eta_in: float, eta_out: float):
+        """Refraction when crossing a plane of given normal.
+
+        According to Snell's law, if a beam of light crosses a surface between a medium of refractive index
+        `eta_in` to one of index `eta_out`, then the direction of propagation changes according to the relation
+            `eta_in * sin_in = eta_out * sin_out`
+        where `sin_in` and `sin_out` express the sine of the incoming and outgoing directions of propagation
+        relative to the normal direction of the surface, respectively.
+        Given the angle of the incoming beam, refraction may not always be possible, as when
+        `eta_in * sin_in / eta_out > 1` there is no possible angle whose sine satisfies the relation above. In
+        that case, the beam is *reflected* instead.
+
+        :param Vect3D normal: Vector normal to the plane.
+        :param eta_in: Refractive index of the current material.
+        :param eta_out: Refractive index of the material beyond the plane.
+        :return: A new (unit) vector pointing in the direction after refraction if possible,
+            or after reflection otherwise.
+        """
+
+        r_in = self.normalized()
+        n = normal.normalized()
+        d = eta_out**2 - eta_in**2 * (1 - dot(r_in, n))**2
+        if d >= 0:
+            # Refraction is possible! The refracted vector is a unit vector which is
+            # a linear combination of r_in and n. The exact coefficients are obtained
+            # by setting up and solving appropriate equations.
+            alpha = - eta_in * dot(r_in, n)/sqrt(d)
+            r_out = normalized((1-alpha)*dot(r_in, n)*n + alpha*r_in)
+        else:
+            r_out = r_in.reflect(n)
+        return r_out
+
 
 class Matrix3by3:
     """Custom class for 3 by 3 matrices.
@@ -532,6 +573,7 @@ def is_positive_frame(u: Vect3D, v: Vect3D, w: Vect3D, precision: int = 6):
     :param Vect3D u: First vector.
     :param Vect3D v: Second vector.
     :param Vect3D w: Third vector.
+    :param int precision: Digits of precision to be considered when checking for vanishing of the determinant.
     :return: `True` if the three vectors form a positively oriented frame, `False` otherwise.
     """
 
