@@ -1,4 +1,4 @@
-from tuples import *
+from math_tools import *
 
 
 def is_within_range(t, min_time=None, max_time=None) -> bool:
@@ -63,7 +63,6 @@ class Plane:
     def __init__(self, point, normal):
         self.point = point
         self.normal = normal
-        self.components = [self]
 
     def intercept_time(self, ray, min_time=0, max_time=None):
         # Assume by default that no intersection occurs, and then check if it does.
@@ -92,7 +91,6 @@ class Sphere:
     def __init__(self, center, radius):
         self.center = center
         self.radius = radius
-        self.components = [self]
 
     def intercept_time(self, ray, min_time=0, max_time=None):
         # Assume by default that no intersection occurs, and prepare to return None.
