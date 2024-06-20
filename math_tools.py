@@ -483,6 +483,39 @@ class Matrix3by3:
         :return: The determinant of `self`.
         """
         return dot(self._cols[0], cross(self._cols[1], self._cols[2]))
+    
+    def gram_schmidt(self, tolerance: int = 3):
+        """Orthonormalize the frame formed by the columns of `self` using the Gram-Schmidt process.
+
+        The Gram-Schmidt process produces an orthonormal basis out of a given frame.
+        The idea is to remove from each vector of the frame its projection onto the
+        span of the previous elements in the basis, and then normalizing it. Once
+        the first `i` vectors are processed, finding the orthogonal projection of
+        the next element onto their span boils down to a sequence of dot products.
+
+        If the given vectors are not linearly independent then one of them will lie
+        in the span of the previous elements. In that case, that vector reduces to
+        zero after removing the orthogonal projection, and the normalization will
+        raise an error. Since detecting linear dependence is so simple, this
+        implementation does not check for linear independence before starting the
+        process. Instead, it checks that the norm of each vector is larger than a
+        certain cutoff just before normalizing it and raises an error otherwise.
+
+        :param int tolerance: Number of digits of precision when checking for vanishing of norms.
+        :return: A new `Matrix3by3` formed by the vectors in the orthogonalized frame.
+        """
+
+        ortho_vectors = []
+        for col in self._cols:
+            v = col.copy()
+            for e in ortho_vectors:
+                v -= dot(v, e) * e
+            n = v.norm()
+            if n <= 10**(-tolerance):
+                raise ValueError('Gram-Schmidt fail: Columns not linearly independent.')
+            v /= n
+            ortho_vectors.append(v)
+        return Matrix3by3(*ortho_vectors)
 
 
 def dot(v: Vect3D, w: Vect3D) -> float:
@@ -546,7 +579,7 @@ def det(mat: Matrix3by3) -> float:
     return mat.det()
 
 
-def is_basis(u: Vect3D, v: Vect3D, w: Vect3D, precision: int = 6):
+def is_basis(u: Vect3D, v: Vect3D, w: Vect3D, tolerance: int = 6):
     """Check if a given triple of `Vect3D` objects is a basis.
 
     Linear independence is tested via the determinant. Since the latter may
@@ -556,14 +589,14 @@ def is_basis(u: Vect3D, v: Vect3D, w: Vect3D, precision: int = 6):
     :param Vect3D u: First vector.
     :param Vect3D v: Second vector.
     :param Vect3D w: Third vector.
-    :param int precision: Number of digits of precision when checking for vanishing of the determinant.
+    :param int tolerance: Number of digits of precision when checking for vanishing of the determinant.
     :return: `True` if the given vectors are linearly independent (up to the specified error), `False` otherwise.
     """
 
-    return abs(det(Matrix3by3(u, v, w))) > 10**(-precision)
+    return abs(det(Matrix3by3(u, v, w))) > 10**(-tolerance)
 
 
-def is_positive_frame(u: Vect3D, v: Vect3D, w: Vect3D, precision: int = 6):
+def is_positive_frame(u: Vect3D, v: Vect3D, w: Vect3D, tolerance: int = 6):
     """Check if a given triple of `Vect3D` objects is a positively oriented basis.
 
     This is done by checking that the determinant of the corresponding matrix
@@ -573,11 +606,11 @@ def is_positive_frame(u: Vect3D, v: Vect3D, w: Vect3D, precision: int = 6):
     :param Vect3D u: First vector.
     :param Vect3D v: Second vector.
     :param Vect3D w: Third vector.
-    :param int precision: Digits of precision to be considered when checking for vanishing of the determinant.
+    :param int tolerance: Digits of precision to be considered when checking for vanishing of the determinant.
     :return: `True` if the three vectors form a positively oriented frame, `False` otherwise.
     """
 
-    return det(Matrix3by3(u, v, w)) > 10**(-precision)
+    return det(Matrix3by3(u, v, w)) > 10**(-tolerance)
 
 
 class Ray:
