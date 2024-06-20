@@ -413,17 +413,18 @@ class Matrix3by3:
         return bool([c for c in self._cols if c])
 
     # Access
-    def __getitem__(self, pos: tuple[int, int]) -> float:
-        """Getter operator by pair of indices.
+    def __getitem__(self, pos: int | tuple[int, int]) -> Vect3D | float:
+        """Getter operator for an index or pair of indices.
 
         The expected order of the indices is as row, then column.
         Since the data of `self` is implemented as a list of columns,
         the order of the indices needs to be reversed for access.
 
-        :param tuple[int, int] pos: Pair of indices of the position to access.
-        :return: The value of the entry of `self` in position `pos`.
+        :param int | tuple[int, int] pos: Index or pair of indices of the position to access.
+        :return: Column in position `pos` if it is an integer, or the value of the entry of `self` in position `pos`.
         """
-
+        if isinstance(pos, int):
+            return self._cols[pos]
         i, j = pos
         return self._cols[j][i]
 
