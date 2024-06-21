@@ -4,9 +4,9 @@ The main purpose of this module is to implement RGB color  and matching
 functions, i.e. the conversion from wavelength to RGB representation of
 monochromatic light.
 
-Color representation is implemented as a subclass `Color` of `Vect3D`.
+Color representation is implemented as a subclass ``Color`` of ``Vect3D``.
 It overrides some of the parent methods to ensure consistency of return
-types and provides aliases `r`, `g`, and `b` for the components. It
+types and provides aliases ``r``, ``g``, and ``b`` for the components. It
 also implements component-by-component transformations, such as gamma
 correction and clipping of values within a prescribed range, and export
 methods to save color as pixels in a .ppm file.
@@ -33,43 +33,43 @@ functions from the XYZ color space to
 
 Classes
 -------
-    - `Color`:
-        RGB representation of color, subclass of `Vect3D`. Overrides some
-        of the `Vect3D` and implements new ones for component-wise
+    - ``Color``:
+        RGB representation of color, subclass of ``Vect3D``. Overrides some
+        of the ``Vect3D`` and implements new ones for component-wise
         transformations, plus some utilities for saving to .ppm format.
-    - `PWGaussian`:
+    - ``PWGaussian``:
         Piece-wise Gaussian function.
 
 Functions
 ---------
-    - `wl2xyz`:
+    - ``wl2xyz``:
         Full XYZ color matching function. Converts wavelength to XYZ.
 
-    - `wl2ciergb`:
+    - ``wl2ciergb``:
         CIE RGB color matching function. Converts wavelength to CIE RGB.
 
-    - `wl2lsrgb`:
+    - ``wl2lsrgb``:
         Linear standard RGB color matching function. Converts wavelength
         to linear standard RGB.
 
-    - `wl2srgb`:
+    - ``wl2srgb``:
         Standard RGB color matching function. Converts wavelength to
         standard RGB.
 
-    - `wl2argb`:
+    - ``wl2argb``:
         Adobe RGB color matching function. Converts wavelength to Adobe RGB.
 
 Other objects
 -------------
-    - `PWGaussian wl2[xyz][012]`:
+    - ``PWGaussian wl2[xyz][012]``:
         Individual summands for the components of the XYZ color matching function.
-    - `SumFun wl2[xyz]`:
+    - ``SumFun wl2[xyz]``:
         Components of the XYZ color matching function.
-    - `Matrix3by3 xyz2ciergb1:
+    - ``Matrix3by3 xyz2ciergb1``:
         Matrix for the XYZ to CIE RGB transformation.
-    - `Matrix3by3 xyz2srgb:
+    - ``Matrix3by3 xyz2srgb``:
         Matrix for the XYZ to standard RGB transformation.
-    - `Matrix3by3 xyz2argb`:
+    - ``Matrix3by3 xyz2argb``:
         Matrix for the XYZ to Adobe RGB transformation.
 
 NOTE: All wavelengths are expressed in *nanometers*.
@@ -86,15 +86,15 @@ class Color(Vect3D):
     These objects are linear in nature, and many of the operations involving them
     are similar to those of 3-dimensional vectors, including algebraic operations
     like sum, rescaling, linear combinations, and matrix multiplication. As such,
-    the class is implemented as a subclass of `Vect3D`. Many of the method
+    the class is implemented as a subclass of ``Vect3D``. Many of the method
     definitions are overridden to ensure that the objects returned by all
     operations are of the correct type. In addition, property methods are defined
-    to give aliases `r` (red), `g` (green), and `b` (blue) to the `x`-, `y`-, and
-    `z`-components of a color expressed as a vector.
+    to give aliases ``r`` (red), ``g`` (green), and ``b`` (blue) to the ``x``-,
+    ``y``-, and ``z``-components of a color expressed as a vector.
     """
 
     def __init__(self, r: float, g: float, b: float):
-        """Initializer of the `RGBColor` class.
+        """Initializer of the ``RGBColor`` class.
 
         :param float r: Red component.
         :param float g: Green component.
@@ -104,14 +104,14 @@ class Color(Vect3D):
         super().__init__(r, g, b)
 
     def __eq__(self, other) -> bool:
-        """Equality operator for the `RGBColor` class.
+        """Equality operator for the ``RGBColor`` class.
 
         Overrides the parent method by adding the condition that both
-        terms be instances of the `RGBColor` class.
+        terms be instances of the ``RGBColor`` class.
 
-        :param Color other: The color to be compared with `self`.
-        :return: `True` if both `self` and `other` are instances of `RGBColor`
-            and are equal as `Vect3D` objects.
+        :param Color other: The color to be compared with ``self``.
+        :return: ``True`` if both ``self`` and ``other`` are instances of ``RGBColor``
+            and are equal as ``Vect3D`` objects.
         """
 
         return isinstance(other, Color) and super().__eq__(other)
@@ -120,7 +120,7 @@ class Color(Vect3D):
     def __repr__(self) -> str:
         """Override representation operator to reflect the new type.
 
-        :return: A string representation of `self`, specifying the `RGBColor` type.
+        :return: A string representation of ``self``, specifying the ``RGBColor`` type.
         """
 
         return f'RGBColor{tuple(self._entries)}'
@@ -134,10 +134,10 @@ class Color(Vect3D):
         return f'{self.r} {self.g} {self.b}\n'
 
     def round_components(self, scale: int = 1):
-        """Produce a rescaled version of `self` with integer components.
+        """Produce a rescaled version of ``self`` with integer components.
 
         :param int scale: Rescaling factor, default to 1, i.e. no rescaling.
-        :return: A new RGB color with values rescaled by `scale` and integer components.
+        :return: A new RGB color with values rescaled by ``scale`` and integer components.
         """
 
         return Color(*[int((scale * e) // 1.0) for e in self._entries])
@@ -145,7 +145,7 @@ class Color(Vect3D):
     # Access
     @property
     def r(self) -> float:
-        """Red component, alias for `x`.
+        """Red component, alias for ``x``.
 
         :return: The value of the red component of a color.
         """
@@ -154,7 +154,7 @@ class Color(Vect3D):
 
     @property
     def g(self) -> float:
-        """Green component, alias for `y`.
+        """Green component, alias for ``y``.
 
         :return: The value of the green component of a color.
         """
@@ -163,7 +163,7 @@ class Color(Vect3D):
 
     @property
     def b(self) -> float:
-        """Blue component, alias for `z`.
+        """Blue component, alias for ``z``.
 
         :return: The value of the blue component of a color.
         """
@@ -175,7 +175,7 @@ class Color(Vect3D):
         """Set the value of the red component.
 
         :param float value: Value to assign to the red component.
-        :return: `None`.
+        :return: ``None``.
         """
 
         self.x = value
@@ -185,7 +185,7 @@ class Color(Vect3D):
         """Set the value of the green component.
 
         :param float value: Value to assign to the green component.
-        :return: `None`.
+        :return: ``None``.
         """
 
         self.y = value
@@ -195,78 +195,78 @@ class Color(Vect3D):
         """Set the value of the blue component.
 
         :param float value: Value to assign to the blue component.
-        :return: `None`.
+        :return: ``None``.
         """
 
         self.z = value
 
     # Algebra
     def __add__(self, other: 'Color') -> 'Color':
-        """Addition operator for the `RGBColor` class.
+        """Addition operator for the ``RGBColor`` class.
 
         Overridden to ensure that the returned object is of the correct type, i.e.
-        `RGBColor` if both summands are instances of this class. Since `self`
+        `RGBColor` if both summands are instances of this class. Since ``self``
         certainly is, the return type should be the same as that of the other summand.
 
-        :param Color other: The color to be added to `self`.
-        :return: A new color representing the superposition of `self` and `other`.
+        :param Color other: The color to be added to ``self``.
+        :return: A new color representing the superposition of ``self`` and ``other``.
         """
 
         return self.cast(super().__add__(other))
 
     def __sub__(self, other: 'Color') -> 'Color':
-        """Subtraction operator for the `RGBColor` class.
+        """Subtraction operator for the ``RGBColor`` class.
 
         Overridden to ensure that the returned object is of the correct type, i.e.
-        `RGBColor` if both members are instances of this class. Since `self`
+        ``RGBColor`` if both members are instances of this class. Since ``self``
         certainly is, the return type should be the same as that of the other term.
 
-        :param Color other: The color to be subtracted from `self`.
-        :return: A new color representing the difference of `self` and `other`.
+        :param Color other: The color to be subtracted from ``self``.
+        :return: A new color representing the difference of ``self`` and ``other``.
         """
 
         return self.cast(super().__sub__(other))
 
     def __rmul__(self, scalar: float) -> 'Color':
-        """Rescaling operator for the `RGBColor` class.
+        """Rescaling operator for the ``RGBColor`` class.
 
-        Overridden to ensure that the returned object is of the correct type, i.e. `RGBColor`.
+        Overridden to ensure that the returned object is of the correct type, i.e. ``RGBColor``.
 
-        :param float scalar: The factor by which to rescale `self`.
+        :param float scalar: The factor by which to rescale ``self``.
         :return: A new color representing the rescaled color.
         """
 
         return self.cast(super().__rmul__(scalar))
 
     def __mul__(self, scalar: float) -> 'Color':
-        """Rescaling operator for the `RGBColor` class by multiplication from the right.
+        """Rescaling operator for the ``RGBColor`` class by multiplication from the right.
 
-        Overridden to ensure that the returned object is of the correct type, i.e. `RGBColor`.
+        Overridden to ensure that the returned object is of the correct type, i.e. ``RGBColor``.
 
-        :param float scalar: The factor by which to rescale `self`.
+        :param float scalar: The factor by which to rescale ``self``.
         :return: A new color representing the rescaled color.
         """
 
         return self.cast(super().__mul__(scalar))
 
     def __truediv__(self, scalar: float) -> 'Color':
-        """Rescaling operator for the `RGBColor` class.
+        """Rescaling operator for the ``RGBColor`` class.
 
-        Overridden to ensure that the returned object is of the correct type, i.e. `RGBColor`.
+        Overridden to ensure that the returned object is of the correct type, i.e. ``RGBColor``.
 
-        :param float scalar: The factor by which to rescale `self`.
+        :param float scalar: The factor by which to rescale ``self``.
         :return: A new color representing the rescaled color.
         """
 
         return self.cast(super().__truediv__(scalar))
 
     def __neg__(self) -> 'Color':
-        """Negation operator for the `RGBColor` class.
+        """Negation operator for the ``RGBColor`` class.
 
         May not be meaningful for colors, but it is convenient to define subtraction.
-        Overridden to ensure the correct return type, i.e. `RGBColor`.
+        Overridden to ensure the correct return type, i.e. ``RGBColor``.
 
-        :return: A new "color" with components opposite to those of `self`.
+        :return: A new "color" with components opposite to those of ``self``.
         """
         return self.cast(super().__neg__())
 
@@ -275,7 +275,7 @@ class Color(Vect3D):
         """Apply a transformation to all components individually.
 
         :param f: Transformation to apply to all components.
-        :return: A new RGB color with all components transformed according to f.
+        :return: A new RGB color with all components transformed according to ``f``.
         """
 
         return Color(*[f(e) for e in self._entries])
@@ -288,7 +288,7 @@ class Color(Vect3D):
 
         :param minimum: Lower end of allowable range.
         :param maximum: Upper end of allowable range.
-        :return: A new `RGBColor` object with all three components clipped within range.
+        :return: A new ``RGBColor`` object with all three components clipped within range.
         """
 
         return self.transform_components(lambda x: min(max(x, minimum), maximum))
@@ -318,13 +318,13 @@ class PWGaussian:
     """Piece-wise Gaussian function.
 
     This function is defined by two different formulas, or lobes,
-    for values of `x` before and after a certain threshold `mu`.
+    for values of ``x`` before and after a certain threshold ``mu``.
     Both lobes are Gaussian functions with the same maximum value
-    `alpha` attained at `mu`, and only differ by their "width".
+    `alpha` attained at ``mu``, and only differ by their "width".
     """
 
     def __init__(self, alpha: float, mu: float, tau1: float, tau2: float):
-        """Initializer of the `PWGaussian` class.
+        """Initializer of the ``PWGaussian`` class.
 
         :param float alpha: Amplitude of the function, i.e. its maximum value.
         :param float mu: Location of the peak.
@@ -360,7 +360,7 @@ def wl2xyz(wl: float) -> Vect3D:
     """XYZ color matching function.
 
     :param float wl: Wavelength of the monochromatic light to be converted.
-    :return: XYZ representation of monochromatic light of wavelength `wl` as a `Vect3D` object.
+    :return: XYZ representation of monochromatic light of wavelength ``wl`` as a ``Vect3D`` object.
     """
 
     return Vect3D(wl2x(wl), wl2y(wl), wl2z(wl))
@@ -390,7 +390,7 @@ def wl2ciergb(wl: float) -> Color:
     """CIE RGB color matching function.
 
     :param float wl: Wavelength of monochromatic light.
-    :return: RGB representation of monochromatic light of wavelength `wl` according to the CIE standard.
+    :return: RGB representation of monochromatic light of wavelength ``wl`` according to the CIE standard.
     """
     return (xyz2ciergb * wl2xyz(wl)).clip()
 
@@ -399,7 +399,7 @@ def wl2lsrgb(wl: float) -> Color:
     """Linear sRGB color matching function.
 
     :param float wl: wavelength of monochromatic light.
-    :return: RGB representation of monochromatic light of wavelength `wl` according to the sRGB standard,
+    :return: RGB representation of monochromatic light of wavelength ``wl`` according to the sRGB standard,
         without gamma correction.
     """
 
@@ -410,7 +410,7 @@ def wl2srgb(wl: float) -> Color:
     """sRGB color matching function.
 
     :param float wl: wavelength of monochromatic light.
-    :return: RGB representation of monochromatic light of wavelength `wl` according to the sRGB standard.
+    :return: RGB representation of monochromatic light of wavelength ``wl`` according to the sRGB standard.
     """
 
     return wl2lsrgb(wl).transform_components(lambda x: 12.92*x if x <= 0.0031308 else 1.055*x**0.4166 - 0.055)
@@ -420,7 +420,7 @@ def wl2argb(wl: float) -> Color:
     """Adobe RGB color matching function.
 
     :param float wl: wavelength of monochromatic light.
-    :return: RGB representation of monochromatic light of wavelength `wl` according to the Adobe RGB standard.
+    :return: RGB representation of monochromatic light of wavelength ``wl`` according to the Adobe RGB standard.
     """
 
     return (xyz2argb * wl2xyz(wl)).clip()
