@@ -690,15 +690,16 @@ class Ray:
         
         return f'({str(self.origin)}, {str(self.direction)})'
 
-    def point_at(self, t: float) -> Vect3D:
+    def point_at(self, t: float | None) -> Vect3D | None:
         """Determine the point on the parameterized line at time `t`.
         
-        :param float t: 
+        :param float | None t: Time, optional.
         :return: The coordinate vector of the point on the parameterized
-            line corresponding to the value `t` of the parameter.
+            line corresponding to the value `t` of the parameter if it is
+            specified, `None` otherwise.
         """
         
-        return self.origin + t * self.direction
+        return self.origin + t * self.direction if t is not None else None
 
 
 class SumFun:
