@@ -629,9 +629,9 @@ class Ray:
 
     Attributes
     ----------
-    origin : Vect3D
+    origin: Vect3D
         The coordinate vector of the point from which the ray emanates.
-    direction : Vect3D
+    direction: Vect3D
         The vector along which the ray emanates from its origin.
     """
 
@@ -772,3 +772,55 @@ class SumFun:
         """
 
         return SumFun(*self._components + other._components)
+
+
+class TabFun:
+    """A class of tabulated math functions.
+
+    The class wraps around a dictionary storing all currently known values
+    of the function. The ``__call__`` method first checks whether the value
+    at the given input has already been computed; if not, it uses the
+    provided formula to compute it and stores the value for later use.
+
+    Since it makes no sense to reassign or modify the underlying
+    "mathematical formula" without resetting the table, the function
+    attribute is protected, but readable. Similarly, the values in the table
+    should not be modified directly, so the table is protected as well.
+
+    Attributes
+    ----------
+    _f: function
+        The function whose values are stored in the table.
+    _table: dict
+        Dictionary storing the known values of the function.
+    """
+
+    def __init__(self, f):
+        """Initializer of the ``TabFun`` class.
+
+        Takes in a function ``f`` and initializes a dictionary as table.
+
+        :param f: The function, or "mathematical formula", underlying the class instance.
+        """
+        assert callable(f), '`TabFun` initializer fail: Argument not callable.'
+        self._f = f
+        self._table = {}
+
+    # Getters
+    @property
+    def f(self):
+        """Getter of ``_f`` (read only)."""
+
+        return self._f
+
+    @property
+    def table(self):
+        """Getter of ``_table`` (read only)."""
+
+        return self._table
+
+    # Call method
+    def __call__(self, x: float) -> float:
+        if x not in self._table:
+            self._table[x] = self._f(x)
+        return self._table[x]
