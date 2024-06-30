@@ -645,8 +645,8 @@ class Ray:
         :param Vect3D direction: Direction vector of the ray.
         """
 
-        self.origin = origin.copy()
-        self.direction = direction.copy()
+        self.origin = origin.copy() if isinstance(origin, Vect3D) else Vect3D(*origin)
+        self.direction = direction.copy() if isinstance(direction, Vect3D) else Vect3D(*direction)
 
     def __eq__(self, other: 'Ray') -> bool:
         """Equality operator for the ``Ray`` class.
