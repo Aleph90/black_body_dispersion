@@ -20,6 +20,7 @@ SpectralBeam (Beam)
 """
 
 from math_tools import Vect3D, Ray
+from color_utilities import Color
 
 
 class RefractiveRecord:
@@ -99,12 +100,37 @@ class Beam(Ray):
 
         :param Vect3D origin: Starting point of the beam.
         :param Vect3D direction: Direction vector of the beam.
-        :param RefractiveRecord ref_rec: A record of the materials
+        :param RefractiveRecord ref_rec: Record of the materials
             surrounding the source that emitted the beam.
         """
 
         super().__init__(origin, direction)
         self.ref_rec = ref_rec if ref_rec is not None else RefractiveRecord()
+
+
+class ColorBeam(Beam):
+    """A class to model a physical beam of light of given RGB color, with
+    the additional information of the materials surrounding it.
+    """
+
+    def __init__(
+            self,
+            origin: Vect3D,
+            direction: Vect3D,
+            color: Color | None = None,
+            ref_rec: RefractiveRecord | None = None,
+    ):
+        """Initializer of the ColorBeam class.
+
+        :param Vect3D origin: Starting point of the beam.
+        :param Vect3D direction: Direction of propagation of the beam.
+        :param Color color: Color of the beam, default to ``None``.
+        :param RefractiveRecord ref_rec: Record of the materials
+            surrounding the source that emitted the beam.
+        """
+
+        super().__init__(origin, direction, ref_rec)
+        self.color = color if color is not None else Color(0, 0, 0)
 
 
 class SpectralBeam(Beam):
@@ -116,7 +142,7 @@ class SpectralBeam(Beam):
             origin: Vect3D,
             direction: Vect3D,
             wavelength: float,
-            ref_rec: RefractiveRecord = RefractiveRecord(),
+            ref_rec: RefractiveRecord | None = None,
     ):
         """Initializer of the ``SpectralBeam`` class.
 

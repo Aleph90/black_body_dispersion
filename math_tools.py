@@ -309,7 +309,7 @@ class Vect3D:
         :return: A new vector representing the reflection of ``self`` with respect to the plane of given normal.
         """
 
-        return self - 2 * self.dot_with(normal)/normal.norm_squared() * normal
+        return self - 2 * normal * self.dot_with(normal)/normal.norm_squared()
 
     def refract(self, normal: 'Vect3D', eta_in: float, eta_out: float):
         """Refraction when crossing a plane of given normal.
@@ -323,6 +323,12 @@ class Vect3D:
         ``eta_in * sin_in / eta_out > 1`` there is no possible angle whose sine satisfies the relation above. In
         that case, the beam is *reflected* instead.
 
+        Up to an overall rescaling, the outgoing vector can always be expressed as ``v + a*normal``, ``v`` the
+        incoming vector and ``a`` some coefficient. With a little trigonometry one sees that
+            ``sin_in / sin_out = (v + a*normal).norm() / v.norm()``
+        so Snell's equation becomes a quadratic in ``a`` after the due rearrangements. The method implements an
+        explicit solution of this quadratic.
+
         :param Vect3D normal: Vector normal to the plane.
         :param eta_in: Refractive index of the current material.
         :param eta_out: Refractive index of the material beyond the plane.
@@ -330,18 +336,10 @@ class Vect3D:
             or after reflection otherwise.
         """
 
-        r_in = self.normalized()
-        n = normal.normalized()
-        d = eta_out**2 - eta_in**2 * (1 - dot(r_in, n))**2
-        if d >= 0:
-            # Refraction is possible! The refracted vector is a unit vector which is
-            # a linear combination of r_in and n. The exact coefficients are obtained
-            # by setting up and solving appropriate equations.
-            alpha = - eta_in * dot(r_in, n)/sqrt(d)
-            r_out = normalized((1-alpha)*dot(r_in, n)*n + alpha*r_in)
-        else:
-            r_out = r_in.reflect(n)
-        return r_out
+        n_sq = normal.norm_squared()
+        d = self.dot_with(normal)
+        delta = 1 - (1 - (eta_out/eta_in)**2) * n_sq * self.norm_squared() / (d**2)
+        return self + normal * d * (sqrt(delta)-1)/n_sq if delta > 0 else self.reflect(normal)
 
 
 class Matrix3by3:
@@ -354,7 +352,7 @@ class Matrix3by3:
     """
 
     def __init__(self, c1: Vect3D, c2: Vect3D, c3: Vect3D):
-        """Initializer of the `Matrix3by3 class.
+        """Initializer of the `Matrix3by3` class.
 
         :param Vect3D c1: First column.
         :param Vect3D c2: Second column.
